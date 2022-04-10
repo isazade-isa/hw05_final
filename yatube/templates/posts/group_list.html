@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Записи сообщества {{ group }}
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1>{{ group.title }}</h1>
+      <p>{{ group.description|linebreaksbr }}</p>
+      {% for post in page_obj %}
+        {% include "includes/card.html" with WHEN_PRINT=False WHEN_AUTHOR=True %}
+      {% endfor %}
+      {% include 'posts/includes/paginator.html' %}
+  </div>
+{% endblock %}

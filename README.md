@@ -1,3 +1,9 @@
-# hw05_final
+# _Сообщество_
+### _Тут мы делимся впечатлениями_
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+#### Проект разработан Python3.7 + Django2.2 + HTML5
+###### Проект включает в себя знакомство и изучение Django. URL и VIEW файлы, связь между ними. Знакомство с HTML - теги, верстка, CSS, работа с шаблонамы, статика. Взаимодействие Базы Данных с запросамы от приложений или пользователя.
+
+###### Сложные моменты в проекте - создание локаничности и удобства для ползователя.
+
+<img src="https://img3.goodfon.ru/original/1920x1080/e/ca/kot-kotik-kote-kotenok-vzgliad-glaza-smotrit-korzina.jpg">
