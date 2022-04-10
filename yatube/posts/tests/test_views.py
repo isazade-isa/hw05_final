@@ -1,7 +1,6 @@
 # yatube/tests/test_views.py
 import tempfile
 import shutil
-from urllib import response
 
 
 from django import forms
