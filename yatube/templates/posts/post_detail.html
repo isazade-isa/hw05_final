@@ -75,6 +75,9 @@
           {{ comment.author.get_full_name  }}
         </a>
       </h5>
+      <h7>
+        Дата: {{comment.created|date:"d E Y"}}
+      </h7>
         <p>
           {{ comment.text }}
         </p>
