@@ -1,5 +1,4 @@
 # users/urls.py
-
 from django.contrib.auth.views import (LoginView, LogoutView,
                                        PasswordChangeDoneView,
                                        PasswordChangeView,
