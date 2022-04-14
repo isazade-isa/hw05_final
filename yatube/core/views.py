@@ -4,7 +4,11 @@ from django.shortcuts import render
 
 
 def page_not_found(request, exception):
-    return render(request, 'core/404.html', {'path': request.path}, status=NOT_FOUND)
+    return render(
+        request, 'core/404.html',
+        {'path': request.path},
+        status=NOT_FOUND
+    )
 
 
 def permission_denied(request, exception):
