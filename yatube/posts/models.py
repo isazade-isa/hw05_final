@@ -51,7 +51,8 @@ class Post(models.Model):
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        help_text='Выберите картинку'
     )
 
     class Meta:
@@ -79,7 +80,7 @@ class Comment(models.Model):
         verbose_name="Текст комментария",
         help_text='Введите Ваш комментарий'
     )
-    created = models.DateTimeField(
+    pub_date = models.DateTimeField(
         "Дата публикации комментария",
         auto_now_add=True
     )
@@ -96,3 +97,21 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
         related_name='following',
     )
+
+    class Meta:
+        verbose_name = "Подписчик"
+        verbose_name_plural = "Подписчики"
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='twice_follow_constraint'
+            ),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='%(app_label)s_%(class)s_prevent_self_follow'
+            ),
+        ]
+
+
+    def __str__(self):
+        return f'{self.user} follow {self.author}'

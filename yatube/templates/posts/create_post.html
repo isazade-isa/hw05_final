@@ -40,6 +40,7 @@
               <form method="post" action="{% url 'posts:post_edit' pk=post_id %}" enctype="multipart/form-data">
             {% else %}
               <form method="post" enctype="multipart/form-data">
+              <!-- Если в action указываю post_create, то при редактировании создает новый пост на базе старого, а так же остается и старый пост  -->
             {% endif %}
             {% csrf_token %}
             {% for field in form %}

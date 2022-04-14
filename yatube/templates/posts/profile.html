@@ -8,15 +8,17 @@
 {% block content %}
   <div class="container py-5">
     <h1>Все посты пользователя {{ author.get_full_name }}</h1>
-    <h3>Всего постов: {{ author.posts.count }} </h3>
-    {% if request.user.is_authenticated and author.username != request.user.username %}
+    <h5>Всего подписчиков: {{ author.following.count }}</h5>
+    <h5>Всего подписок: {{ author.follower.count }}</h5>
+    <h5>Всего постов: {{ author.posts.count }} </h5>
+    {% if request.user.is_authenticated and author != request.user %}
       {% if following %}
-      <a
-        class="btn btn-outline-danger"
-        href="{% url 'posts:profile_unfollow' author.username %}" role="button"
-      >
-        Отписаться
-      </a>
+        <a
+          class="btn btn-outline-danger"
+          href="{% url 'posts:profile_unfollow' author.username %}" role="button"
+        >
+          Отписаться
+        </a>
       {% else %}
         <a
           class="btn btn-outline-primary"

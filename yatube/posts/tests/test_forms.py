@@ -1,7 +1,6 @@
 # yatube/posts/tests/test_forms.py
 import shutil
 import tempfile
-import datetime
 
 from http.client import OK
 
@@ -30,23 +29,23 @@ class PostCreateFormTest(TestCase):
             slug="test_slug",
             description="Тестовое описание"
         )
+        cls.image = SimpleUploadedFile(
+            name='small.gif',
+            content=(
+                b'\x47\x49\x46\x38\x39\x61\x02\x00'
+                b'\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+                b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+                b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+                b'\x0A\x00\x3B'
+            ),
+            content_type='image/gif'
+        )
         cls.post = Post.objects.create(
             text='Текст тестового поста',
-            pub_date=datetime.datetime.now(),
             author=PostCreateFormTest.user,
             group=PostCreateFormTest.group,
-            image=SimpleUploadedFile(
-                name='small.gif',
-                content=(
-                    b'\x47\x49\x46\x38\x39\x61\x02\x00'
-                    b'\x01\x00\x80\x00\x00\x00\x00\x00'
-                    b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-                    b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-                    b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-                    b'\x0A\x00\x3B'
-                ),
-                content_type='image/gif'
-            )
+            image=PostCreateFormTest.image
         )
 
     @classmethod
@@ -63,7 +62,7 @@ class PostCreateFormTest(TestCase):
         self.author_client.force_login(self.user_author)
 
     def test_post_create(self):
-        '''Проверка создания поста'''
+        """Проверка создания поста"""
         post_count = Post.objects.count()
         form_data = {
             'text': 'Текст формы',
@@ -90,6 +89,34 @@ class PostCreateFormTest(TestCase):
             ).exists(),
             error_2
         )
+
+    def test_post_create_with_image(self):
+        """Проверка создания поста с картинкой"""
+        post_count = Post.objects.count()
+        image = SimpleUploadedFile(
+            name='1_small.gif',
+            content=(
+                b'\x47\x49\x46\x38\x39\x61\x02\x00'
+                b'\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+                b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+                b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+                b'\x0A\x00\x3B'
+            ),
+            content_type='image/gif'
+        )
+        form_data = {
+            'text': 'Текст формы',
+            'image': image,
+        }
+        self.authorized_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Post.objects.count(), post_count + 1)
+        image_name = image.name.split('/')
+        self.assertEqual(image_name, [form_data['image'].name])
 
     def test_post_create_without_group(self):
         post_count = Post.objects.count()
@@ -127,14 +154,66 @@ class PostCreateFormTest(TestCase):
             redirect_url
         )
 
+    def test_post_edit_with_image(self):
+        """
+        Проверка редактирования поста с изменением картинки.
+        """
+        new_image = SimpleUploadedFile(
+            name='new_small.gif',
+            content=(
+                b'\x47\x49\x46\x38\x39\x61\x02\x00'
+                b'\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+                b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+                b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+                b'\x0A\x00\x3B'
+            ),
+            content_type='image/gif'
+        )
+        data = {
+            'text': 'С изменением картинки',
+            'image': new_image
+        }
+        self.authorized_client.post(
+            reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
+            data=data,
+            follow=True
+        )
+        self.assertTrue(
+            Post.objects.filter(
+                text='С изменением картинки',
+                image='posts/new_small.gif'
+            ).exists()
+        )
+
+    def test_post_edit_without_image(self):
+        """
+        Проверка редактирования поста без изменения картинки.
+        """
+        form_data = {
+            'image': PostCreateFormTest.image
+        }
+        self.authorized_client.post(
+            reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
+        image_name = PostCreateFormTest.image.name.split('/')
+        self.assertEqual(image_name, [form_data['image'].name])
+
     def test_post_edit_with_text_and_group(self):
         """
         Проверка редактирования поста с изменением
         текста и группы.
         """
+        new_group = Group.objects.create(
+            title="Тестовая группа 2",
+            slug="test_slug_2",
+            description="Тестовое описание 2"
+        )
         data = {
             'text': 'Редактированные текст и группа',
-            'group': PostCreateFormTest.group.id
+            'group': new_group.id
         }
         self.authorized_client.post(
             reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
@@ -146,7 +225,7 @@ class PostCreateFormTest(TestCase):
                 author=PostCreateFormTest.user,
                 pub_date=PostCreateFormTest.post.pub_date,
                 text='Редактированные текст и группа',
-                group=PostCreateFormTest.group.id
+                group=new_group.id
             ).exists()
         )
 
@@ -169,7 +248,7 @@ class PostCreateFormTest(TestCase):
                 author=PostCreateFormTest.user,
                 pub_date=PostCreateFormTest.post.pub_date,
                 text='Редактированный текст без изменения группы',
-                group=PostCreateFormTest.group.id
+                group=PostCreateFormTest.group.id,
             ).exists()
         )
 
@@ -189,5 +268,31 @@ class PostCreateFormTest(TestCase):
         )
         self.assertEqual(Comment.objects.count(), coms_cnt + 1)
         self.assertTrue(
-            Comment.objects.filter(text='Текст комментария',).exists()
+            Comment.objects.filter(
+                text='Текст комментария',
+                author=PostCreateFormTest.user,
+                post_id=self.post.id,
+            ).exists()
         )
+
+    def test_comment_create_for_guest(self):
+        coms_cnt = Comment.objects.count()
+        form_data = {
+            'text': 'Текст комментария',
+        }
+        response = self.guest_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
+        login_url = reverse('users:login')
+        new_url = reverse(
+            'posts:add_comment',
+            kwargs={'post_id': self.post.id}
+        )
+        redirect_url = f'{login_url}?next={new_url}'
+        self.assertRedirects(
+            response,
+            redirect_url
+        )
+        self.assertEqual(Comment.objects.count(), coms_cnt)

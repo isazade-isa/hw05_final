@@ -85,7 +85,8 @@ class ViewsPagesTests(TestCase):
             reverse(
                 'posts:post_edit',
                 kwargs={'post_id': ViewsPagesTests.post.id}
-            ): 'posts/create_post.html'
+            ): 'posts/create_post.html',
+            reverse('posts:follow_index'): 'posts/follow.html'
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -165,15 +166,7 @@ class ViewsPagesTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
-
-    def test_show_correct_context_is_edit_in_post_edit(self):
-        """Шаблон post_edit сформирован с правильным контекстом."""
-        response = self.author_client.get(reverse(
-            'posts:post_edit',
-            kwargs={'post_id': ViewsPagesTests.post.id}
-        ))
-        form_field = response.context.get('is_edit')
-        self.assertTrue(form_field)
+                self.assertTrue(response.context.get('is_edit'))
 
     def test_show_correct_context_post_detail(self):
         """Шаблоны post_detail сформированы с правильным контекстом."""
@@ -258,4 +251,4 @@ class ViewsPagesTests(TestCase):
             reverse('posts:follow_index')
         )
         page_object_unsub = response_unsubscribed.context['page_obj'][0]
-        self.assertEqual(page_object_unsub.text, ViewsPagesTests.post.text)
+        self.assertEqual(page_object_unsub, ViewsPagesTests.post)

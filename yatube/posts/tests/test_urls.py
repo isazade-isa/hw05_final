@@ -40,7 +40,8 @@ class UrlPostTests(TestCase):
             f'/profile/{self.user.username}/': 'posts/profile.html',
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
-            f'/posts/{self.post.id}/edit/': 'posts/create_post.html'
+            f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html'
         }
         for url, template in templates_urls_names.items():
             with self.subTest(url=url):
@@ -61,7 +62,9 @@ class UrlPostTests(TestCase):
             f'/posts/{self.post.pk}/': OK,
             '/create/': FOUND,
             f'/posts/{self.post.pk}/edit/': FOUND,
-            '/unexisting_page/': NOT_FOUND
+            '/unexisting_page/': NOT_FOUND,
+            f'/profile/{self.user.username}/follow/': FOUND,
+            f'/profile/{self.user.username}/unfollow/': FOUND
         }
         for url, status in url_status.items():
             with self.subTest(url=url):

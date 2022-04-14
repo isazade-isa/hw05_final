@@ -53,7 +53,7 @@ def post_detail(request, post_id):
         Post.objects.select_related('author', 'group'),
         id=post_id
     )
-    form = CommentForm(request.POST or None)
+    form = CommentForm()
     comments = Comment.objects.filter(post=post)
     context = {
         'post': post,
@@ -114,9 +114,7 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     template = 'posts/follow.html'
-    user = request.user
-    authors = user.follower.values_list('author', flat=True)
-    post_list = Post.objects.filter(author__id__in=authors)
+    post_list = Post.objects.filter(author__following__user=request.user)
     context = get_page_context(post_list, request)
     return render(request, template, context)
 
@@ -125,18 +123,16 @@ def follow_index(request):
 def profile_follow(request, username):
     author = User.objects.get(username=username)
     user = request.user
-    check_follow = Follow.objects.filter(
-        user=request.user,
-        author=author
-    ).exists()
-    if author != user and not check_follow:
-        Follow.objects.create(author=author, user=user)
+    if author != user:
+        Follow.objects.get_or_create(author=author, user=user)
         return redirect('posts:profile', username=username)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    # Если коротко, то юзер вернется на ту страницу, откуда он перешел сюда))
+    # В данном случае, понажатия кнопки, юзер останется на той же странице
 
 
 @login_required
 def profile_unfollow(request, username):
     user = request.user
-    Follow.objects.get(user=user, author__username=username).delete()
+    Follow.objects.filter(user=user, author__username=username).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
